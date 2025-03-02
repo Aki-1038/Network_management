@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網路管理</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* 自訂樣式 */
+        #chatbox {
+            height: 400px; /* 設定聊天框的高度 */
+            border: 1px solid #ccc; /* 設定邊框顏色 */
+            overflow-y: scroll; /* 讓聊天框可以垂直滾動 */
+            padding: 10px; /* 設定內邊距 */
+            background-color: #f8f9fa; /* 設定背景顏色 */
+        }
+        .user-message {
+            color: green; /* 使用者訊息顏色設定 */
+        }
+        .bot-message {
+            color: blue; /* 機器人訊息顏色設定 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <p>獲取網路規劃和管理的實務建議，以Cisco路由器和交換機在Packet Tracer的CLI操作介面使用為例。</p>
+        <h1 class="text-center">網路管理</h1>
+        <div id="chatbox" class="mb-3"></div> <!-- 聊天框，用來顯示訊息 -->
+        <div class="input-group">
+            <input type="text" id="userInput" class="form-control" placeholder="輸入你想問的問題..."> <!-- 輸入框 -->
+            <div class="input-group-append">
+                <button id="sendButton" class="btn btn-primary">發送</button> <!-- 發送按鈕 -->
+            </div>
+        </div>
+        <h5>範例：</h5>
+        <pre>
+        <code>
+            You: 無法開機的原因
+            Expert:
+            遇到路由器或交換機無法開機的情況，通常可能有幾個原因。讓我幫你列出一些常見的問題及其解決方案：
+            
+            1. **電源問題**：
+            
+            - **檢查電源線**：確保電源線已經正確連接到設備和插座上，有沒有鬆脫的情況。
+            
+            - **插頭**：試試其他電源插座，可能那個插座本身有問題。
+            
+            2. **硬體故障**：
+            
+            - **過熱**：檢查設備周圍是否有足夠的通風，有時候過熱會導致設備自動關閉。
+            
+            - **故障指示燈**：觀察一下路由器或交換機上的指示燈，是否有異常閃爍的情況，像是紅色燈表示故障。
+            
+            3. **韌體問題**：
+            
+            - **韌體損壞**：如果在更新韌體時斷電，可能會導致韌體損壞。這時需要恢復韌體，可以使用TFTP伺服器來上傳韌體。
+            
+            4. **內部組件問題**：
+            
+            - **記憶體或其他元件故障**：如果硬體內部元件發生故障，可能需要更換相應的元件。
+            
+            5. **配置問題**：
+            
+            - **錯誤的啟動配置**：如果設備在啟動時有錯誤的配置文件，可能會導致無法啟動。可以考慮進入ROMMON模式來修正配置。
+            
+            ### 解決步驟建議：
+            
+            1. **檢查連接**：確保所有的電源和網路線連接無誤。
+            
+            2. **重啟設備**：如果未正常啟動，試著重新啟動一次。
+            
+            3. **查看指示燈**：觀察設備上的指示燈狀態，以獲得故障線索。
+            
+            4. **使用CLI檢查**：如果能進入CLI，使用`show version`和`show running-config`指令來檢查是否有異常配置或錯誤信息。
+            
+            5. **進入ROMMON模式**：如果以上方法都無法解決，進入ROMMON模式，並按照Cisco的指導步驟來恢復出廠設定或重載韌體。
+            
+            如果你有具體的型號或者使用的背景，可以提供更多資訊，讓我能給你更針對性的建議喔！
+        </code></pre>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script>
+        const messages = []; // 儲存對話上下文
+
+        document.getElementById('sendButton').onclick = function() {
+            const userInput = document.getElementById('userInput').value; // 取得使用者輸入的內容
+            messages.push({ role: 'user', content: userInput }); // 儲存使用者訊息
+            document.getElementById('chatbox').innerHTML += `<div class="user-message"><strong>You:</strong> ${userInput}</div>`; // 顯示使用者訊息
+            document.getElementById('userInput').value = ''; // 清空輸入框
+
+            fetch('Network_management.php', { // 發送請求到後端PHP檔案
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json' // 設定請求內容格式為JSON
+                },
+                body: JSON.stringify({ message: userInput, context: messages }) // 傳送上下文
+            })
+            .then(response => response.json()) // 解析JSON格式的回應
+            .then(data => {
+                const formattedReply = data.reply.split('\n').map(line => `<p>${line}</p>`).join(''); // 格式化機器人回覆
+                messages.push({ role: 'bot', content: formattedReply }); // 儲存機器人回覆
+                document.getElementById('chatbox').innerHTML += `<div class="bot-message"><strong>Expert:</strong> ${formattedReply}</div>`; // 顯示機器人回覆
+                document.getElementById('chatbox').scrollTop = chatbox.scrollHeight; // 滾動到最底部
+            });
+        };
+    </script>
+</body>
+</html>
